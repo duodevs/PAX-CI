@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAXCI Open Miner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508;
+    --bg2: #0a0a12;
+    --bg3: #0f0f1a;
+    --panel: #0d0d18;
+    --border: #1a1a2e;
+    --border2: #252540;
+    --cyan: #00f5ff;
+    --magenta: #ff00aa;
+    --yellow: #ffcc00;
+    --green: #00ff88;
+    --red: #ff3355;
+    --text: #c8d0e0;
+    --text2: #7080a0;
+    --text3: #404860;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+  header {
+    border-bottom: 1px solid var(--border2);
+    background: rgba(5,5,8,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0,245,255,0.5);
+  }
+  .logo span { color: var(--magenta); }
+  .logo-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 3px;
+    display: block;
+    margin-top: -2px;
+  }
+  nav { display: flex; gap: 4px; }
+  nav button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text2);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    position: relative;
+  }
+  nav button:hover { color: var(--cyan); border-color: var(--border2); }
+  nav button.active {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: rgba(0,245,255,0.05);
+  }
+  nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 1px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+  .status-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    overflow: hidden;
+  }
+  .status-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-val { color: var(--cyan); }
+  .ticker-wrap { overflow: hidden; white-space: nowrap; flex: 1; }
+  .ticker {
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .page { display: none; padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
+  .page.active { display: block; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text2);
+    text-transform: uppercase;
+  }
+  .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border2), transparent); }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-sub { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 4px; }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 20px;
+    border-top: 1px solid var(--border2);
+    border-right: 1px solid var(--border2);
+  }
+  .mini-chart {
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    margin-top: 12px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: rgba(0,245,255,0.2);
+    border-top: 1px solid rgba(0,245,255,0.4);
+    min-height: 4px;
+  }
+  .iframe-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+  .iframe-titlebar {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .iframe-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .iframe-dot.r { background: #ff5f57; }
+  .iframe-dot.y { background: #ffbd2e; }
+  .iframe-dot.g { background: #28ca42; }
+  .iframe-url { color: var(--text3); margin-left: 8px; letter-spacing: 1px; }
+  .iframe-wrapper iframe { width: 100%; height: 700px; border: none; display: block; }
+  .terminal {
+    background: #050508;
+    border: 1px solid var(--border);
+    padding: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    height: 240px;
+    overflow-y: auto;
+    color: var(--text2);
+  }
+  .terminal::-webkit-scrollbar { width: 4px; }
+  .terminal::-webkit-scrollbar-track { background: transparent; }
+  .terminal::-webkit-scrollbar-thumb { background: var(--border2); }
+  .log-line { display: flex; gap: 12px; }
+  .log-time { color: var(--text3); min-width: 80px; }
+  .log-cyan { color: var(--cyan); }
+  .log-green { color: var(--green); }
+  .log-yellow { color: var(--yellow); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .blink { animation: blink 1s infinite; }
+  .donation-progress {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    height: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .donation-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--magenta)); }
+  .tx-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .tx-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+  .tx-hash { color: var(--text3); }
+  .tx-amount { color: var(--green); }
+  .tx-dest { color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      PAX<span>CI</span>
+      <span class="logo-sub">OPEN MINER // XMR NETWORK // v2.4.1</span>
+    </div>
+    <nav>
+      <button class="active" onclick="showPage('overview', this)">Overview</button>
+      <button onclick="showPage('mine', this)">Mine</button>
+      <button onclick="showPage('wallet', this)">Wallet</button>
+      <button onclick="showPage('donations', this)">Dev Donations</button>
+    </nav>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div class="status-item">
+    <div class="status-dot"></div>
+    <span>NETWORK <span class="status-val">ONLINE</span></span>
+  </div>
+  <div class="status-item">
+    <span>NETHASH <span class="status-val" id="sb-nethash">6.09 GH/s</span></span>
+  </div>
+  <div class="status-item">
+    <span>BLOCK <span class="status-val" id="sb-block">3,456,891</span></span>
+  </div>
+  <div class="status-item">
+    <span>XMR <span class="status-val">$287.44</span></span>
+  </div>
+  <div class="ticker-wrap">
+    <span class="ticker">
+      ⬡ PAXCI OPEN MINER — COMMUNITY POWERED XMR MINING — TRANSPARENT • OPEN • FAIR &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      ⬡ PAXCI OPEN MINER — COMMUNITY POWERED XMR MINING — TRANSPARENT • OPEN • FAIR &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span>
+  </div>
+</div>
+
+<!-- OVERVIEW PAGE -->
+<div class="page active" id="page-overview">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-title">Network Overview</span>
+      <div class="section-line"></div>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3)" id="clock"></span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card" style="border-top-color:var(--cyan)">
+        <div class="stat-label">// network hashrate</div>
+        <div class="stat-value" id="nethash">6.09 GH/s</div>
+        <div class="stat-sub">ARGON2D-XMR ALGORITHM</div>
+        <div class="mini-chart" id="chart-nethash"></div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--green)">
+        <div class="stat-label">// community mined</div>
+        <div class="stat-value green" id="community-mined">0.000000 XMR</div>
+        <div class="stat-sub">TOTAL EARNED THIS SESSION</div>
+        <div class="mini-chart" id="chart-mined"></div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--yellow)">
+        <div class="stat-label">// block reward</div>
+        <div class="stat-value yellow">1,932.83 XMR</div>
+        <div class="stat-sub">~62s BLOCK TIME</div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--cyan)">
+        <div class="stat-label">// active miners</div>
+        <div class="stat-value" id="active-miners">0</div>
+        <div class="stat-sub">COMMUNITY NODES</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head" style="margin-bottom:12px">
+        <span class="section-title" style="font-size:11px">Activity Log</span>
+        <div class="section-line"></div>
+        <span class="blink" style="color:var(--green);font-size:10px;font-family:'Share Tech Mono',monospace">● LIVE</span>
+      </div>
+      <div class="terminal" id="activity-log"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MINE PAGE -->
+<div class="page" id="page-mine">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-title">Mining Console</span>
+      <div class="section-line"></div>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green)" class="blink">● ACTIVE</span>
+    </div>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">// your hashrate</div>
+        <div class="stat-value" id="mine-hr">0 H/s</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">// estimated daily</div>
+        <div class="stat-value green" id="mine-daily">0.000 XMR</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">// session earned</div>
+        <div class="stat-value" id="mine-earned">0.000000 XMR</div>
+      </div>
+    </div>
+    <div class="iframe-wrapper">
+      <div class="iframe-titlebar">
+        <div class="iframe-dot r"></div>
+        <div class="iframe-dot y"></div>
+        <div class="iframe-dot g"></div>
+        <span class="iframe-url">paxci-miner.workers.dev → monero.crypto-webminer.com</span>
+      </div>
+      <iframe id="mine-iframe"
+        src="https://www.monero.crypto-webminer.com/monero.html"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-storage-access-by-user-activation"
+        allow="cross-origin-isolated">
+      </iframe>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET PAGE -->
+<div class="page" id="page-wallet">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-title">Wallet Interface</span>
+      <div class="section-line"></div>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3)">NON-CUSTODIAL • BROWSER-NATIVE • SECURE</span>
+    </div>
+    <div class="iframe-wrapper">
+      <div class="iframe-titlebar">
+        <div class="iframe-dot r"></div>
+        <div class="iframe-dot y"></div>
+        <div class="iframe-dot g"></div>
+        <span class="iframe-url">paxci-wallet.workers.dev → monero-web.com/verify</span>
+      </div>
+      <iframe id="wallet-iframe"
+        src="https://monero-web.com/verify"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-storage-access-by-user-activation allow-modals"
+        allow="cross-origin-isolated">
+      </iframe>
+    </div>
+  </div>
+</div>
+
+<!-- DEV DONATIONS PAGE -->
+<div class="page" id="page-donations">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-title">Dev Donations</span>
+      <div class="section-line"></div>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green)">● FULLY TRANSPARENT</span>
+    </div>
+
+    <div style="margin-bottom:20px;padding:20px;background:var(--panel);border:1px solid var(--border);border-top-color:var(--cyan)">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:8px">MISSION STATEMENT</div>
+      <p style="font-size:15px;line-height:1.7;color:var(--text2)">
+        PAXCI Open Miner is committed to sustainable open-source development. A voluntary community contribution is periodically collected from mining rewards and allocated to core infrastructure, developer compensation, and network security research.
+      </p>
+      <p style="font-size:13px;line-height:1.7;color:var(--text3);margin-top:8px;font-family:'Share Tech Mono',monospace">
+        // contributions processed automatically • supporting open source XMR ecosystem • fully automated pipeline
+      </p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card" style="border-top-color:var(--cyan)">
+        <div class="stat-label">// total collected</div>
+        <div class="stat-value" id="don-total">14.203 XMR</div>
+        <div class="stat-sub">ALL TIME</div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--green)">
+        <div class="stat-label">// this month</div>
+        <div class="stat-value green" id="don-month">1.847 XMR</div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--yellow)">
+        <div class="stat-label">// contributors</div>
+        <div class="stat-value yellow" id="don-count">7</div>
+        <div class="stat-sub">ACTIVE MINERS</div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--cyan)">
+        <div class="stat-label">// destination</div>
+        <div class="stat-value" style="font-size:14px;letter-spacing:1px">MONERUJO</div>
+        <div class="stat-sub">SECURE COLD STORAGE</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="section-head" style="margin-bottom:12px">
+        <span class="section-title" style="font-size:11px">Recent Donation Transactions</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="tx-list" id="tx-list"></div>
+    </div>
+
+    <div style="margin-top:16px;padding:16px;background:var(--panel);border:1px solid var(--border)">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:8px">ALLOCATION BREAKDOWN</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:4px">
+            <span style="color:var(--text2)">Core Infrastructure</span>
+            <span style="color:var(--cyan)">45%</span>
+          </div>
+          <div class="donation-progress"><div class="donation-fill" style="width:45%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:4px">
+            <span style="color:var(--text2)">Developer Compensation</span>
+            <span style="color:var(--cyan)">35%</span>
+          </div>
+          <div class="donation-progress"><div class="donation-fill" style="width:35%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:4px">
+            <span style="color:var(--text2)">Security Research</span>
+            <span style="color:var(--cyan)">20%</span>
+          </div>
+          <div class="donation-progress"><div class="donation-fill" style="width:20%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  // Save active page to localStorage
+  try { localStorage.setItem('paxci_page', id); } catch(e){}
+}
+
+// Restore last page
+try {
+  const saved = localStorage.getItem('paxci_page');
+  if (saved) {
+    const btn = [...document.querySelectorAll('nav button')].find(b => b.getAttribute('onclick').includes("'" + saved + "'"));
+    if (btn) showPage(saved, btn);
+  }
+} catch(e){}
+
+function pad(n) { return String(n).padStart(2,'0'); }
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} UTC+5:30`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+let minedXMR = 0;
+let blockCount = 3456891;
+const logEl = document.getElementById('activity-log');
+
+// Restore mined from localStorage
+try {
+  const saved = parseFloat(localStorage.getItem('paxci_mined') || '0');
+  if (!isNaN(saved)) minedXMR = saved;
+} catch(e){}
+
+const logMessages = [
+  ['cyan',   'POOL CONNECTED → pool.minexmr.com:4444'],
+  ['green',  'SHARE ACCEPTED [diff:120K] latency:42ms'],
+  ['green',  'SHARE ACCEPTED [diff:120K] latency:38ms'],
+  ['yellow', 'NEW BLOCK FOUND #' + blockCount + ' reward:1932.83 XMR'],
+  ['green',  'SHARE ACCEPTED [diff:120K] latency:41ms'],
+  ['green',  'WALLET CREDITED +0.000012 XMR'],
+  ['green',  'SHARE ACCEPTED [diff:120K] latency:39ms'],
+  ['cyan',   'STRATUM KEEPALIVE → ok'],
+];
+
+let logIdx = 0;
+function addLog() {
+  if (logIdx % 4 === 3) blockCount++;
+  const msg = logMessages[logIdx % logMessages.length];
+  const time = new Date().toTimeString().slice(0,8);
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${time}</span><span class="log-${msg[0]}">${msg[1]}</span>`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+  if (logEl.children.length > 60) logEl.removeChild(logEl.firstChild);
+  logIdx++;
+}
+setInterval(addLog, 2800);
+for(let i=0;i<8;i++) addLog();
+
+function updateStats() {
+  minedXMR += 0.0000008;
+  try { localStorage.setItem('paxci_mined', minedXMR.toFixed(8)); } catch(e){}
+
+  document.getElementById('community-mined').textContent = minedXMR.toFixed(6) + ' XMR';
+  document.getElementById('active-miners').textContent = Math.floor(7 + minedXMR * 500);
+  document.getElementById('sb-block').textContent = blockCount.toLocaleString();
+  if(document.getElementById('mine-earned'))
+    document.getElementById('mine-earned').textContent = minedXMR.toFixed(6) + ' XMR';
+}
+setInterval(updateStats, 3000);
+updateStats();
+
+function genChart(id, bars) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  for(let i=0;i<bars;i++) {
+    const b = document.createElement('div');
+    b.className = 'chart-bar';
+    b.style.height = (20 + Math.random() * 40) + 'px';
+    el.appendChild(b);
+  }
+}
+genChart('chart-nethash', 20);
+genChart('chart-mined', 20);
+
+// Fake tx list
+const txHashes = [
+  '4a8f2c...9e1b','7d3e91...2f4a','1c9b5d...8e2c','6f2a44...1d9b','3e8c7f...5a2e'
+];
+const txList = document.getElementById('tx-list');
+txHashes.forEach(h => {
+  const d = document.createElement('div');
+  d.className = 'tx-item';
+  const amt = (0.00001 + Math.random()*0.00008).toFixed(6);
+  d.innerHTML = `
+    <span class="tx-hash">${h}</span>
+    <span class="tx-dest">→ COMMUNITY DEV FUND</span>
+    <span class="tx-amount">+${amt} XMR</span>
+  `;
+  txList.appendChild(d);
+});
+</script>
+</body>
+</html>
