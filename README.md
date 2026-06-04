@@ -19,12 +19,12 @@ hardware.
 
 ## Features
 
-- ⛏️ Browser-based XMR mining via WebAssembly
-- 🔒 Non-custodial wallet interface — your keys, your coins
-- 📊 Real-time network statistics
-- 🦊 Optimized for Firefox
-- 💸 Voluntary dev donation system — fully transparent
-- 🌐 No account required
+-  Browser-based XMR mining via WebAssembly
+-  Non-custodial wallet interface — your keys, your coins
+-  Real-time network statistics
+-  Optimized for Firefox
+-  Dev donation system — fully transparent
+-  No account required
 
 ## Usage
 
@@ -43,7 +43,7 @@ We recommend Firefox for the best experience.
 
 ## Dev Donations 
 
-A small voluntary contribution is periodically collected to fund:
+A small amount of money is periodically collected to fund:
 
 - Core infrastructure costs
 - Developer compensation
@@ -69,4 +69,4 @@ MIT © duodevs
 
 ---
 
-*Made with ☕ by steel/steels — [duodevs](https://github.com/duodevs)*
+*Made with ☕ by — [duodevs](https://github.com/duodevs)*
